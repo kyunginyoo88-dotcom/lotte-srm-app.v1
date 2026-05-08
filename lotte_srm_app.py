@@ -10,6 +10,8 @@
 import asyncio
 import io
 import os
+import subprocess
+import sys
 import tempfile
 import traceback
 import zipfile
@@ -18,6 +20,16 @@ from datetime import datetime
 import openpyxl
 import streamlit as st
 from playwright.async_api import async_playwright
+
+
+# ── Playwright 브라우저 자동 설치 (서버 환경 대응) ───────────────────────────
+@st.cache_resource
+def install_playwright_browser():
+    result = subprocess.run(
+        [sys.executable, "-m", "playwright", "install", "chromium"],
+        capture_output=True, text=True
+    )
+    return result.returncode == 0
 
 # ── 고정 상수 ─────────────────────────────────────────────────────────────────
 URL = "https://srm.lottedfs.co.kr/ui/ldfs_ui/index.html"
@@ -377,6 +389,10 @@ def main():
         page_icon="🏬",
         layout="centered"
     )
+
+    # 브라우저 설치 (최초 1회만 실행됨)
+    with st.spinner("브라우저 준비 중... (최초 실행 시 1~2분 소요)"):
+        install_playwright_browser()
 
     st.title("🏬 롯데면세점 SRM 자동 다운로드")
     st.caption("브랜드설정 엑셀을 업로드하면 SRM에서 매출재고 데이터를 자동으로 내려받습니다.")
